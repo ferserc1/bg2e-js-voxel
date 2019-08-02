@@ -23,6 +23,10 @@
   },
   "homepage": "https://github.com/ferserc1/bg2e-js-voxel#readme",
   "dependencies": {
-    "bg2e-js": "^1.3.27"
+    "bg2e-js": "^1.3.27",
+    "gulp": "^4.0.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-connect": "^5.7.0",
+    "gulp-replace": "^1.0.0"
   }
 }
