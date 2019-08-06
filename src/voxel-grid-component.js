@@ -51,7 +51,27 @@
         return plist;
     }
 
+    function updateVoxels() {
+        if (this.node) {
+            this.node.children.forEach((child) => {
+                let voxel = child.component("bg.scene.Voxel");
+                let transform = child.transform;
+                if (voxel && transform && voxel.isCompatible(this)) {
+                    
+                }
+            })
+        }
+    }
+
     class VoxelGrid extends bg.scene.Component {
+        isCompatible(voxel) {
+            if (voxel instanceof bg.scene.Voxel) {
+                return voxel.sideSize == this.gridSize;
+            }
+            else {
+                return null;
+            }
+        }
         constructor(size = 0.2, x = 5, y = 5) {
             super();
 
@@ -119,6 +139,16 @@
             matrixState.modelMatrixStack.push();
             pipeline.draw(this._gizmoPlist);
             matrixState.modelMatrixStack.pop();
+        }
+
+        // Direct rendering
+        willDisplay(pipeline,matrixState,projectionMatrixStack) {
+            updateVoxels.apply(this);
+        }
+
+        // Render queue
+        willUpdate(modelMatrixStack,viewMatrixStack,projectionMatrixStack) {
+            updateVoxels.apply(this);
         }
 
         serialize(componentData,promises,url) {

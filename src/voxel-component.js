@@ -40,6 +40,30 @@
     }
 
     class Voxel extends bg.scene.Component {
+        static IsCompatible(v1,v2) {
+            if (v1 instanceof Voxel) {
+                return v1.isCompatible(v2);
+            }
+            else if (v2 instanceof Voxel) {
+                return v2.isCompatible(v1);
+            }
+            else {
+                return false;
+            }
+        }
+
+        isCompatible(other) {
+            if (other instanceof Voxel) {
+                return other.sideSize == this.sideSize;
+            }
+            else if (other instanceof bg.scene.VoxelGrid) {
+                return other.gridSize == this.sideSize;
+            }
+            else {
+                return false;
+            }
+        }
+
         constructor(size = 0.2,width = 1,height = 1) {
             super();
 
