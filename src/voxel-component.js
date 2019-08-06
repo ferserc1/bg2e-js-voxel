@@ -64,17 +64,33 @@
             }
         }
 
-        constructor(size = 0.2,width = 1,height = 1) {
+        constructor(size = 0.2,width = 1,height = 1,depth = 1) {
             super();
 
-            if (size<=0 || width<=0 || height<=0) {
+            this._identifier = bg.utils.generateUUID();
+
+            if (size<=0 || width<=0 || height<=0 || depth<=0) {
                 throw new Error("Voxel size can't be negative or zero");
             }
 
             this._sideSize = size;
             this._width = width;
             this._height = height;
+            this._depth = depth;
+
+            // This allows to increase the rendering performance, avoiding to
+            // update voxels if the data is not changed from the previous frame.
+            // This property must be set to false only by the elements of the scene
+            // that controls the voxel layout, such as a VoxelGrid
+            this._modified = true;
         }
+
+        set modified(m) { this._modified = m; }
+        get modified() { return this._modified; }
+
+        // A voxel identifier is readonly, and is generated at the constructor, or
+        // is deserialized from a file
+        get identifier() { return this._identifier; }
 
         get sideSize() { return this._sideSize; }
         set sideSize(s) {
@@ -82,14 +98,18 @@
                 throw new Error("Voxel size can't be negative or zero");
             }
             this._sideSize = s;
+            this._modified = true;
         }
 
+        // TODO: get and set width, height and depth depending on the
+        // voxel rotation
         get width() { return this._width; }
         set width(w) {
             if (w<=0) {
                 throw new Error("Voxel size can't be negative or zero");
             }
             this._width = w;
+            this._modified = true;
         }
 
         get height() { return this._height; }
@@ -98,37 +118,57 @@
                 throw new Error("Voxel size can't be negative or zero");
             }
             this._height = h;
+            this._modified = true;
         }
 
+        get depth() { return this._depth; }
+        set depth(d) {
+            if (d<=0) {
+                throw new Error("Voxel size can't be negative or zero");
+            }
+            this._depth = d;
+            this._modified = true;
+        }
+
+        // TODO: Voxel offsets. Displace the drawable object to align it with the voxel
+
+        // TODO: Voxel rotation
+
         get size() {
-            return new bg.Vector2(
+            return new bg.Vector3(
                 this._sideSize * this._width,
-                this._sideSize * this._height);
+                this._sideSize * this._height,
+                this._sideSize * this._depth);
         }
 
         clone() {
-            return new bg.scene.Voxel(this.sideSize,  this.width, this.height);
+            return new bg.scene.Voxel(this.sideSize,  this.width, this.height, this.depth);
         }
 
         displayGizmo(pipeline,matrixState) {
             let pl = getCubeGizmo(this.node.context);
             matrixState.modelMatrixStack.push();
+            matrixState.modelMatrixStack.scale(this._width, this._height, this._depth);
             pipeline.draw(pl);
             matrixState.modelMatrixStack.pop();
         }
 
         serialize(componentData,promises,url) {
             super.serialize(componentData,promises,url);
+            componentData.identifier = this.identifier;
             componentData.sideSize = this.sideSize;
             componentData.width = this.width;
             componentData.height = this.height;
+            componentData.depth = this.depth;
         }
 
         deserialize(context,sceneData,url) {
-            // Side size, width and height can only be positive, non-zero values
+            // Side size, width, height and depth can only be positive, non-zero values
+            this._identifier = sceneData.identifier || this._identifier;
             this.sideSize = sceneData.sideSize>=0 ? sceneData.sideSize : this.sideSize;
             this.width = sceneData.width>=0 ? sceneData.width : this.width;
             this.height = sceneData.height>=0 ? sceneData.height : this.height;
+            this.depth = sceneData.depth>=0 ? sceneData.depth : this.depth;
         }
     }
 

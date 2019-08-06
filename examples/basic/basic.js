@@ -31,10 +31,7 @@ class GizmoWindowController extends bg.app.WindowController {
 				node.name = "Cube 1";
 				node.addComponent(new bg.manipulation.Selectable());
 				node.addComponent(new bg.scene.Transform());
-				let v = new bg.scene.Voxel();
-				v.sideSize = 1;	// 1 meter side
-				v.width = 1;
-				v.height = 1;
+				let v = new bg.scene.Voxel(1,1,2,1);
 				node.addComponent(v);
 				node.removeComponent("bg.scene.OutputChainJoint");
 				node.removeComponent("bg.scene.InputChainJoint");
@@ -42,14 +39,14 @@ class GizmoWindowController extends bg.app.WindowController {
 				let cube2 = bg.scene.Drawable.InstanceNode(node);
 				cube2.name = "Cube 2";
 				cube2.component("bg.scene.Transform").matrix.translate(2,0,0);
-				cube2.addComponent(v.clone());
+				cube2.addComponent(new bg.scene.Voxel(1,1,1,2));
 				grid.addChild(cube2);
 				cube2.removeComponent("bg.scene.OutputChainJoint");
 				cube2.removeComponent("bg.scene.InputChainJoint");
 				
 				let cube3 = bg.scene.Drawable.InstanceNode(node);
 				cube3.name = "Cube 3";
-				cube3.addComponent(v.clone());
+				cube3.addComponent(new bg.scene.Voxel(1,2,1,1));
 				cube3.component("bg.scene.Transform").matrix.translate(-2,0,0);
 				grid.addChild(cube3);
 				cube3.removeComponent("bg.scene.OutputChainJoint");
@@ -58,6 +55,15 @@ class GizmoWindowController extends bg.app.WindowController {
 				node.addComponent(this.buildGizmo());
 				cube2.addComponent(this.buildGizmo());
 				cube3.addComponent(this.buildGizmo());
+
+				let g = grid.component("bg.scene.VoxelGrid");
+				// You can set the voxel position using the identifier, the voxel component
+				// or the node containing the voxel component. The voxel can be added to
+				// the grid before or after setting the position (if the voxel is not added, the
+				// position will be ignored)
+				g.setVoxelPosition(cube2,3,3);
+				g.setVoxelPosition(cube3.component("bg.scene.Voxel").identifier,4,1);
+				g.setVoxelPosition(node.component("bg.scene.Voxel"),2,0);
 				
 				this.postRedisplay();	// Update the view manually, because in this sample the auto update is disabled
 			})

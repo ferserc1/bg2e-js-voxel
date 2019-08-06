@@ -53,16 +53,39 @@
 
     function updateVoxels() {
         if (this.node) {
+            this._modified = false;
+            let gridOffset = { 
+                x: (this.gridSize * this.x) / 2,
+                y: (this.gridSize * this.y) / 2
+            };
             this.node.children.forEach((child) => {
                 let voxel = child.component("bg.scene.Voxel");
                 let transform = child.transform;
-                if (voxel && transform && voxel.isCompatible(this)) {
-                    
+                if (voxel && transform && voxel.isCompatible(this) && voxel.modified) {
+                    // TODO: basic offset
+                    let x = (voxel.sideSize * voxel.width) / 2 - gridOffset.x;
+                    let y = (voxel.sideSize * voxel.height) / 2;
+                    let z = (voxel.sideSize * voxel.depth) / 2 - gridOffset.y;
+
+                    // TODO: position offset
+                    let posData = this._voxelPositions[voxel.identifier];
+                    if (posData) {
+                        x += posData.x * voxel.sideSize;
+                        z += posData.y * voxel.sideSize;
+                    }
+
+                    // Update voxel transform
+                    transform.matrix
+                        .identity()
+                        .translate(x, y, z);
+
+                    voxel.modified = false;
                 }
             })
         }
     }
 
+    // A voxel grid places the voxels in the XZ plane, and allows to build 2D compositions of voxels
     class VoxelGrid extends bg.scene.Component {
         isCompatible(voxel) {
             if (voxel instanceof bg.scene.Voxel) {
@@ -72,6 +95,7 @@
                 return null;
             }
         }
+
         constructor(size = 0.2, x = 5, y = 5) {
             super();
 
@@ -83,6 +107,34 @@
             this._x = x;
             this._y = y;
             this._gizmoPlist = null;
+
+            this._modified = true;
+
+            // Voxel positions
+            this._voxelPositions = {};
+        }
+
+        setVoxelPosition(inVoxel,x,y) {
+            let voxelId = "";
+            if (typeof(inVoxel)=="string") {
+                voxelId = inVoxel;
+            }
+            else if (inVoxel instanceof bg.scene.Voxel) {
+                voxelId = inVoxel.identifier;
+            }
+            else if (inVoxel instanceof bg.scene.Node &&
+                inVoxel.component("bg.scene.Voxel"))
+            {
+                voxelId = inVoxel.component("bg.scene.Voxel").identifier;
+            }
+            else {
+                throw new Error("Invalid voxel or voxel identifier");
+            }
+
+            let positionData = this._voxelPositions[voxelId] || {};
+            positionData.x = Math.round(x);
+            positionData.y = Math.round(y);
+            this._voxelPositions[voxelId] = positionData;
         }
 
         get gridSize() { return this._size; }
@@ -95,6 +147,7 @@
                 this._gizmoPlist.destroy();
                 this._gizmoPlist = null;
             }
+            this._modified = true;
         }
 
         get x() { return this._x; }
@@ -107,6 +160,7 @@
                 this._gizmoPlist.destroy();
                 this._gizmoPlist = null;
             }
+            this._modified = true;
         }
 
         get y() { return this._y; }
@@ -119,6 +173,7 @@
                 this._gizmoPlist.destroy();
                 this._gizmoPlist = null;
             }
+            this._modified = true;
         }
 
         get size() {
@@ -156,12 +211,14 @@
             componentData.gridSize = this.gridSize;
             componentData.x = this.x;
             componentData.y = this.y;
+            componentData.voxelPositions = this._voxelPositions;
         }
 
         deserialize(context,sceneData,url) {
             this.gridSize = sceneData.gridSize>=0 ? sceneData.gridSize : this.gridSize;
             this.x = sceneData.x>=0 ? sceneData.x : this.x;
             this.y = sceneData.y>=0 ? sceneDAta.y : this.y;
+            this._voxelPositions = sceneData.voxelPositions || {};
         }
     }
 
