@@ -27,7 +27,7 @@ class GizmoWindowController extends bg.app.WindowController {
 		
 		bg.base.Loader.Load(this.gl,"../data/test-shape.vwglb")
 			.then((node) => {
-				this._root.addChild(node);
+				grid.addChild(node);
 				node.name = "Cube 1";
 				node.addComponent(new bg.manipulation.Selectable());
 				node.addComponent(new bg.scene.Transform());
@@ -43,7 +43,7 @@ class GizmoWindowController extends bg.app.WindowController {
 				cube2.name = "Cube 2";
 				cube2.component("bg.scene.Transform").matrix.translate(2,0,0);
 				cube2.addComponent(v.clone());
-				this._root.addChild(cube2);
+				grid.addChild(cube2);
 				cube2.removeComponent("bg.scene.OutputChainJoint");
 				cube2.removeComponent("bg.scene.InputChainJoint");
 				
@@ -51,7 +51,7 @@ class GizmoWindowController extends bg.app.WindowController {
 				cube3.name = "Cube 3";
 				cube3.addComponent(v.clone());
 				cube3.component("bg.scene.Transform").matrix.translate(-2,0,0);
-				this._root.addChild(cube3);
+				grid.addChild(cube3);
 				cube3.removeComponent("bg.scene.OutputChainJoint");
 				cube3.removeComponent("bg.scene.InputChainJoint");
 				
@@ -66,12 +66,16 @@ class GizmoWindowController extends bg.app.WindowController {
 				alert(err.message);
 			});
 		
-		let floor = new bg.scene.Node(this.gl,"Floor");
-		floor.addComponent(bg.scene.PrimitiveFactory.Plane(this.gl,10,10));
-		floor.component("bg.scene.Drawable").getMaterial(0).shininess = 50;
-		floor.addComponent(new bg.scene.Transform(bg.Matrix4.Identity().translate(0,-0.5,0)));
-		floor.addComponent(new bg.manipulation.Selectable());
-		this._root.addChild(floor);
+		// let floor = new bg.scene.Node(this.gl,"Floor");
+		// floor.addComponent(bg.scene.PrimitiveFactory.Plane(this.gl,10,10));
+		// floor.component("bg.scene.Drawable").getMaterial(0).shininess = 50;
+		// floor.addComponent(new bg.scene.Transform(bg.Matrix4.Identity().translate(0,-0.5,0)));
+		// floor.addComponent(new bg.manipulation.Selectable());
+		// this._root.addChild(floor);
+
+		let grid = new bg.scene.Node(this.gl,"Grid");
+		grid.addComponent(new bg.scene.VoxelGrid(1,5,5));
+		this._root.addChild(grid);
 		
 		let lightNode = new bg.scene.Node(this.gl,"Light");
 		lightNode.addComponent(new bg.scene.Light(new bg.base.Light(this.gl)));	

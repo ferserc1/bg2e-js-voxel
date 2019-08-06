@@ -43,19 +43,38 @@
         constructor(size = 0.2,width = 1,height = 1) {
             super();
 
+            if (size<=0 || width<=0 || height<=0) {
+                throw new Error("Voxel size can't be negative or zero");
+            }
+
             this._sideSize = size;
             this._width = width;
             this._height = height;
         }
 
         get sideSize() { return this._sideSize; }
-        set sideSize(s) { this._sideSize = s; }
+        set sideSize(s) {
+            if (s<=0) {
+                throw new Error("Voxel size can't be negative or zero");
+            }
+            this._sideSize = s;
+        }
 
         get width() { return this._width; }
-        set width(w) { this._width = w; }
+        set width(w) {
+            if (w<=0) {
+                throw new Error("Voxel size can't be negative or zero");
+            }
+            this._width = w;
+        }
 
         get height() { return this._height; }
-        set height(h) { this._height = h; }
+        set height(h) {
+            if (h<=0) {
+                throw new Error("Voxel size can't be negative or zero");
+            }
+            this._height = h;
+        }
 
         get size() {
             return new bg.Vector2(
@@ -81,7 +100,12 @@
             componentData.height = this.height;
         }
 
-        // TODO: deserialize
+        deserialize(context,sceneData,url) {
+            // Side size, width and height can only be positive, non-zero values
+            this.sideSize = sceneData.sideSize>=0 ? sceneData.sideSize : this.sideSize;
+            this.width = sceneData.width>=0 ? sceneData.width : this.width;
+            this.height = sceneData.height>=0 ? sceneData.height : this.height;
+        }
     }
 
     bg.scene.registerComponent(bg.scene,Voxel,"bg.scene.Voxel");
