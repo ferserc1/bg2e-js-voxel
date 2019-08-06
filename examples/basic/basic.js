@@ -31,16 +31,29 @@ class GizmoWindowController extends bg.app.WindowController {
 				node.name = "Cube 1";
 				node.addComponent(new bg.manipulation.Selectable());
 				node.addComponent(new bg.scene.Transform());
+				let v = new bg.scene.Voxel();
+				v.sideSize = 1;	// 1 meter side
+				v.width = 1;
+				v.height = 1;
+				node.addComponent(v);
+				node.removeComponent("bg.scene.OutputChainJoint");
+				node.removeComponent("bg.scene.InputChainJoint");
 				
 				let cube2 = bg.scene.Drawable.InstanceNode(node);
 				cube2.name = "Cube 2";
 				cube2.component("bg.scene.Transform").matrix.translate(2,0,0);
+				cube2.addComponent(v.clone());
 				this._root.addChild(cube2);
+				cube2.removeComponent("bg.scene.OutputChainJoint");
+				cube2.removeComponent("bg.scene.InputChainJoint");
 				
 				let cube3 = bg.scene.Drawable.InstanceNode(node);
 				cube3.name = "Cube 3";
+				cube3.addComponent(v.clone());
 				cube3.component("bg.scene.Transform").matrix.translate(-2,0,0);
 				this._root.addChild(cube3);
+				cube3.removeComponent("bg.scene.OutputChainJoint");
+				cube3.removeComponent("bg.scene.InputChainJoint");
 				
 				node.addComponent(this.buildGizmo());
 				cube2.addComponent(this.buildGizmo());
@@ -102,7 +115,7 @@ class GizmoWindowController extends bg.app.WindowController {
 			{ type:'bg.scene.Drawable', icon:'gizmo_icon_drawable.png' }
 		],'../data/gizmos/');
 		this._gizmoManager.gizmoIconScale = 2;
-		this._gizmoManager.show3dGizmos = false;
+		this._gizmoManager.show3dGizmos = true;
 	}
     
     frame(delta) { this._renderer.frame(this._root, delta); }
