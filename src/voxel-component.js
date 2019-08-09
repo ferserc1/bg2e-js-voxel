@@ -83,6 +83,12 @@
             // This property must be set to false only by the elements of the scene
             // that controls the voxel layout, such as a VoxelGrid
             this._modified = true;
+
+            // Rotation: the rotation can be 0, 1, 2 or 3, in the X and Y axis, and
+            // will be processed as:
+            //      angle = π/2 * rotation
+            this._rotationX = 0;
+            this._rotationY = 0;
         }
 
         set modified(m) { this._modified = m; }
@@ -132,7 +138,12 @@
 
         // TODO: Voxel offsets. Displace the drawable object to align it with the voxel
 
-        // TODO: Voxel rotation
+        get rotationX() { return this._rotationX; }
+        set rotationX(r) { this._rotationX = Math.round(r) % 4; }
+        get rotationY() { return this._rotationY; }
+        set rotationY(r) { this._rotationY = Math.round(r) % 4; }
+        get angleX() { return this._rotationY * Math.PI / 2; }
+        get angleY() { return this._rotaitonY * Math.PI / 2; }
 
         get size() {
             return new bg.Vector3(

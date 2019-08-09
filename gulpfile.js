@@ -55,16 +55,17 @@ gulp.task("samples", function() {
                 `       <li><a href="examples/${sample}/index.html">${sample}</a></li>`;
             addSample(sample);
         });
-    
-    gulp.src('index.html')
-        .pipe(replace("{{ samples }}",sampleString))
-        .pipe(gulp.dest(`${config.outDir}/`));
-    
-    gulp.src('node_modules/bg2e-js/js/bg2e-es2015.js')
-        .pipe(gulp.dest(`${config.outDir}/js/`));
-    
-    gulp.src('data/**')
-        .pipe(gulp.dest(`${config.outDir}/examples/data`));
+    return Promise.all([
+        gulp.src('index.html')
+            .pipe(replace("{{ samples }}",sampleString))
+            .pipe(gulp.dest(`${config.outDir}/`)),
+
+        gulp.src('node_modules/bg2e-js/js/bg2e-es2015.js')
+            .pipe(gulp.dest(`${config.outDir}/js/`)),
+
+        gulp.src('data/**')
+            .pipe(gulp.dest(`${config.outDir}/examples/data`))
+    ]);
 });
 
 gulp.task("build",gulp.parallel("library","samples"));
@@ -80,9 +81,12 @@ gulp.task("webserver",function() {
 function watchFiles() {
     gulp.watch([
         './index.html',
-        './src/**',
-        './examples/**'
-    ],gulp.series("build"));
+        './src/**'
+    ],gulp.series("library",watchFiles));
+    gulp.watch([
+        './examples/**/*.js',
+        './examples/**/*.html'
+    ],gulp.series("samples",watchFiles));
 }
 
 gulp.task("serve",gulp.parallel("build","webserver",watchFiles));
