@@ -1,42 +1,51 @@
 (function() {
 
-    let g_cube = null;
-    function getCubeGizmo(ctx) {
-        if (!g_cube) {
-            let color = new bg.Color(0.7, 0.0, 1.0, 1.0);
-            g_cube = new bg.base.PolyList(ctx);
-            let vertex = [
-                -0.5, -0.5, -0.5,   // 0
-                -0.5,  0.5, -0.5,   // 1
-                 0.5,  0.5, -0.5,   // 2
-                 0.5, -0.5, -0.5,   // 3
-                -0.5, -0.5,  0.5,   // 4
-                -0.5,  0.5,  0.5,   // 5
-                 0.5,  0.5,  0.5,   // 6
-                 0.5, -0.5,  0.5    // 7
-            ];
-            let normal = [];
-            let tc = [];
-            let c = [];
-            for (let i = 0; i<vertex.length; i+=3) {
-                normal.push(0); normal.push(0); normal.push(1);
-                tc.push(0); tc.push(0);
-                c.push(color.r); c.push(color.g); c.push(color.b); c.push(color.a);
-            }
-            let index = [
-                0, 1, 1, 2, 2, 3, 3, 0,     // Back
-                4, 5, 5, 6, 6, 7, 7, 4,     // Front
-                0, 4, 1, 5, 2, 6, 3, 7      // Connection front -> back
-            ];
-            g_cube.vertex = vertex;
-            g_cube.normal = normal;
-            g_cube.texCoord0 = tc;
-            g_cube.color = c;
-            g_cube.index = index;
-            g_cube.drawMode = bg.base.DrawMode.LINES;
-            g_cube.build();
+    function getCubeGizmo(ctx,side,x,y,z,offset) {
+        let cube = new bg.base.PolyList(ctx);
+        let color = new bg.Color(0.7, 0.0, 1.0, 1.0);
+        let xs = x * side;
+        let ys = y * side;
+        let zs = z * side;
+        let vertex = [
+             0 - offset.x,  0 - offset.y,  0 - offset.z, // 0
+             0 - offset.x, ys - offset.y,  0 - offset.z, // 1
+            xs - offset.x, ys - offset.y,  0 - offset.z, // 2
+            xs - offset.x,  0 - offset.y,  0 - offset.z, // 3
+             0 - offset.x,  0 - offset.y, zs - offset.z, // 4
+             0 - offset.x, ys - offset.y, zs - offset.z, // 5
+            xs - offset.x, ys - offset.y, zs - offset.z, // 6
+            xs - offset.x,  0 - offset.y, zs - offset.z  // 7
+        ];
+        let normal = [];
+        let tc = [];
+        let c = [];
+        for (let i = 0; i<vertex.length; i+=3) {
+            normal.push(0); normal.push(0); normal.push(1);
+            tc.push(0); tc.push(0);
+            c.push(color.r); c.push(color.g); c.push(color.b); c.push(color.a);
         }
-        return g_cube;
+        let index = [
+            0, 1, 1, 2, 2, 3, 3, 0,     // Back
+            4, 5, 5, 6, 6, 7, 7, 4,     // Front
+            0, 4, 1, 5, 2, 6, 3, 7      // Connection front -> back
+        ];
+        cube.vertex = vertex;
+        cube.normal = normal;
+        cube.texCoord0 = tc;
+        cube.color = c;
+        cube.index = index;
+        cube.drawMode = bg.base.DrawMode.LINES;
+        cube.build();
+
+        return cube;
+    }
+
+    function setModified() {
+        this._modified = true;
+        if (this._gizmo) {
+            this._gizmo.destroy();
+            this._gizmo = null;
+        }
     }
 
     class Voxel extends bg.scene.Component {
@@ -78,6 +87,8 @@
             this._height = height;
             this._depth = depth;
 
+            this._gizmo = null;
+
             // This allows to increase the rendering performance, avoiding to
             // update voxels if the data is not changed from the previous frame.
             // This property must be set to false only by the elements of the scene
@@ -89,6 +100,9 @@
             //      angle = π/2 * rotation
             this._rotationX = 0;
             this._rotationY = 0;
+
+            // Offset of the drawable component respects the voxel
+            this._offset = new bg.Vector3(0,0,0);
         }
 
         set modified(m) { this._modified = m; }
@@ -104,10 +118,9 @@
                 throw new Error("Voxel size can't be negative or zero");
             }
             this._sideSize = s;
-            this._modified = true;
+            setModified.apply(this);
         }
 
-        // TODO: get and set width, height and depth depending on the
         // voxel rotation
         get width() { return this._width; }
         set width(w) {
@@ -115,7 +128,7 @@
                 throw new Error("Voxel size can't be negative or zero");
             }
             this._width = w;
-            this._modified = true;
+            setModified.apply(this);
         }
 
         get height() { return this._height; }
@@ -124,7 +137,7 @@
                 throw new Error("Voxel size can't be negative or zero");
             }
             this._height = h;
-            this._modified = true;
+            setModified.apply(this);
         }
 
         get depth() { return this._depth; }
@@ -133,17 +146,20 @@
                 throw new Error("Voxel size can't be negative or zero");
             }
             this._depth = d;
-            this._modified = true;
+            setModified.apply(this);
         }
 
-        // TODO: Voxel offsets. Displace the drawable object to align it with the voxel
+        // The offset getter mark the voxel as modified because the
+        // returned vector is mutable
+        get offset() { setModified.apply(this); return this._offset; }
+        set offset(o) { setModified.apply(this); this._offset = o; }
 
         get rotationX() { return this._rotationX; }
-        set rotationX(r) { this._rotationX = Math.round(r) % 4; }
+        set rotationX(r) { this._rotationX = Math.round(r) % 4; setModified.apply(this); }
         get rotationY() { return this._rotationY; }
-        set rotationY(r) { this._rotationY = Math.round(r) % 4; }
-        get angleX() { return this._rotationY * Math.PI / 2; }
-        get angleY() { return this._rotaitonY * Math.PI / 2; }
+        set rotationY(r) { this._rotationY = Math.round(r) % 4; setModified.apply(this); }
+        get angleX() { return this._rotationX * Math.PI / 2; }
+        get angleY() { return this._rotationY * Math.PI / 2; }
 
         get size() {
             return new bg.Vector3(
@@ -157,11 +173,10 @@
         }
 
         displayGizmo(pipeline,matrixState) {
-            let pl = getCubeGizmo(this.node.context);
-            matrixState.modelMatrixStack.push();
-            matrixState.modelMatrixStack.scale(this._width, this._height, this._depth);
-            pipeline.draw(pl);
-            matrixState.modelMatrixStack.pop();
+            if (!this._gizmo) {
+                this._gizmo = getCubeGizmo(this.node.context, this._sideSize, this._width, this._height, this._depth, this._offset);
+            }
+            pipeline.draw(this._gizmo);
         }
 
         serialize(componentData,promises,url) {

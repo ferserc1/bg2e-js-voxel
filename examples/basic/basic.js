@@ -31,10 +31,15 @@ class GizmoWindowController extends bg.app.WindowController {
 				node.name = "Cube 1";
 				node.addComponent(new bg.manipulation.Selectable());
 				node.addComponent(new bg.scene.Transform());
-				let v = new bg.scene.Voxel(1,2,2,1);
+				let v = new bg.scene.Voxel(1,2,1,3);
 				node.addComponent(v);
 				node.removeComponent("bg.scene.OutputChainJoint");
 				node.removeComponent("bg.scene.InputChainJoint");
+				this._cube1 = node;
+				v.rotationX = 1;
+				v.offset.x = 0.5;
+				v.offset.y = 0.5;
+				v.offset.z = 0.5;
 				
 				// let cube2 = bg.scene.Drawable.InstanceNode(node);
 				// cube2.name = "Cube 2";
@@ -82,6 +87,7 @@ class GizmoWindowController extends bg.app.WindowController {
 		let grid = new bg.scene.Node(this.gl,"Grid");
 		grid.addComponent(new bg.scene.VoxelGrid(1,5,5));
 		this._root.addChild(grid);
+		this._grid = grid.component("bg.scene.VoxelGrid");
 		
 		let lightNode = new bg.scene.Node(this.gl,"Light");
 		lightNode.addComponent(new bg.scene.Light(new bg.base.Light(this.gl)));	
@@ -110,7 +116,7 @@ class GizmoWindowController extends bg.app.WindowController {
 		
         this.buildScene();
 		
-		this._renderer = bg.render.Renderer.Create(this.gl,bg.render.RenderPath.DEFERRED);
+		this._renderer = bg.render.Renderer.Create(this.gl,bg.render.RenderPath.FORWARD);
 		this._renderer.clearColor = bg.Color.White();
 		this._renderer.settings.raytracer.clearColor = bg.Color.White();
 

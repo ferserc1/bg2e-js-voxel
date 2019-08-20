@@ -60,32 +60,55 @@
             };
             this.node.children.forEach((child) => {
                 let voxel = child.component("bg.scene.Voxel");
+                let voxelId = voxel && voxel.identifier;
+                let posData = voxelId && this._voxelPositions[voxelId] || { x:0, z: 0 };
                 let transform = child.transform;
-                if (voxel && transform && voxel.isCompatible(this) && voxel.modified) {
-                    // TODO: basic offset
-                    let x = (voxel.sideSize * voxel.width) / 2 - gridOffset.x;
-                    let y = (voxel.sideSize * voxel.height) / 2;
-                    let z = (voxel.sideSize * voxel.depth) / 2 - gridOffset.y;
+                if (voxel && transform && voxel.isCompatible(this) &&
+                    (voxel.modified || posData.modified))
+                {
+                    let offset = voxel.offset;
+                    let rotY = voxel.angleY;
+                    let x = offset.x;
+                    let y = offset.y;
+                    let z = offset.z;
 
-                    // TODO: position offset
-                    let posData = this._voxelPositions[voxel.identifier];
-                    if (posData) {
-                        x += posData.x * voxel.sideSize;
-                        z += posData.y * voxel.sideSize;
+                    switch (voxel.rotationY) {
+                    case 0:
+                        x -= voxel.sideSize / 2;
+                        z -= voxel.sideSize / 2;
+                        break;
+                    case 1:
+                        x -= voxel.sideSize / 2;
+                        z += voxel.sideSize / 2;
+                        break;
+                    case 2:
+                        x += voxel.sideSize / 2;
+                        z += voxel.sideSize / 2;
+                        break;
+                    case 3:
+                        x += voxel.sideSize / 2;
+                        z -= voxel.sideSize / 2;
+                        break;
                     }
+
+                    x += posData.x * voxel.sideSize;
+                    z += posData.y * voxel.sideSize;
 
                     // Update voxel transform
                     transform.matrix
                         .identity()
-                        .translate(x, y, z);
+                        .rotate(rotY, 0, 1, 0);
+                    transform.matrix.setPosition(x,y,z);
 
                     voxel.modified = false;
+                    posData.modified = false;
                 }
             })
         }
     }
 
     // A voxel grid places the voxels in the XZ plane, and allows to build 2D compositions of voxels
+    // It can handle rotations only in the Y axis
     class VoxelGrid extends bg.scene.Component {
         isCompatible(voxel) {
             if (voxel instanceof bg.scene.Voxel) {
@@ -134,6 +157,7 @@
             let positionData = this._voxelPositions[voxelId] || {};
             positionData.x = Math.round(x);
             positionData.y = Math.round(y);
+            positionData.modified = true;
             this._voxelPositions[voxelId] = positionData;
         }
 
