@@ -186,6 +186,9 @@
             componentData.width = this.width;
             componentData.height = this.height;
             componentData.depth = this.depth;
+            componentData.rotationX = this.rotationX;
+            componentData.rotationY = this.rotationY;
+            componentData.offset = this.offset.toArray();
         }
 
         deserialize(context,sceneData,url) {
@@ -195,6 +198,9 @@
             this.width = sceneData.width>=0 ? sceneData.width : this.width;
             this.height = sceneData.height>=0 ? sceneData.height : this.height;
             this.depth = sceneData.depth>=0 ? sceneData.depth : this.depth;
+            this.rotationX = sceneData.rotationX;
+            this.rotationY = sceneData.rotationY;
+            this.offset = new bg.Vector3(sceneData.offset);
         }
     }
 
