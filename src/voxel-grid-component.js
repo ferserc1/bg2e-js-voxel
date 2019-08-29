@@ -135,6 +135,9 @@
 
             // Voxel positions
             this._voxelPositions = {};
+
+            // Offset of the drawable component respects the voxel grid
+            this._offset = new bg.Vector3(0,0,0);
         }
 
         setVoxelPosition(inVoxel,x,y) {
@@ -200,6 +203,11 @@
             this._modified = true;
         }
 
+        // The getter sets the modified property to true because the offset
+        // vector is mutable
+        get offset() { this._modified = true; return this._offset; }
+        set offset(o) { this._modified = true; this._offset = o; }
+
         get size() {
             return new bg.Vector2(
                 this.gridSize * this.x,
@@ -236,6 +244,7 @@
             componentData.x = this.x;
             componentData.y = this.y;
             componentData.voxelPositions = this._voxelPositions;
+            componentData.offset = this._offset.toArray();
         }
 
         deserialize(context,sceneData,url) {
@@ -243,6 +252,7 @@
             this.x = sceneData.x>=0 ? sceneData.x : this.x;
             this.y = sceneData.y>=0 ? sceneDAta.y : this.y;
             this._voxelPositions = sceneData.voxelPositions || {};
+            this._offset = new bg.Vector3(sceneData.offset);
         }
     }
 
