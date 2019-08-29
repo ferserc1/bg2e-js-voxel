@@ -1,6 +1,6 @@
 (function() {
 
-    function buildGrid(size,x,y,ctx) {
+    function buildGrid(size,x,y,offset,ctx) {
         let color = new bg.Color(1,0,0.8,1);
         let plist = new bg.base.PolyList(ctx);
         let width = size * x;
@@ -16,11 +16,11 @@
 
         let lastIndex = 0;
         function addVertex(x0,y0,x1,y1) {
-            v.push(x0); v.push(0); v.push(y0);
+            v.push(x0 + offset.x); v.push(offset.y); v.push(y0 + offset.z);
             n.push(0); n.push(0); n.push(1);
             t.push(0); t.push(0);
             c.push(color.r); c.push(color.g); c.push(color.b); c.push(color.a);
-            v.push(x1); v.push(0); v.push(y1);
+            v.push(x1 + offset.x); v.push(offset.y); v.push(y1 + offset.z);
             n.push(0); n.push(0); n.push(1);
             t.push(0); t.push(0);
             c.push(color.r); c.push(color.g); c.push(color.b); c.push(color.a);
@@ -53,18 +53,13 @@
 
     function updateVoxels() {
         if (this.node) {
-            this._modified = false;
-            let gridOffset = { 
-                x: (this.gridSize * this.x) / 2,
-                y: (this.gridSize * this.y) / 2
-            };
             this.node.children.forEach((child) => {
                 let voxel = child.component("bg.scene.Voxel");
                 let voxelId = voxel && voxel.identifier;
                 let posData = voxelId && this._voxelPositions[voxelId] || { x:0, z: 0 };
                 let transform = child.transform;
                 if (voxel && transform && voxel.isCompatible(this) &&
-                    (voxel.modified || posData.modified))
+                    (voxel.modified || posData.modified || this._modified))
                 {
                     let offset = voxel.offset;
                     let rotY = voxel.angleY;
@@ -74,25 +69,26 @@
 
                     switch (voxel.rotationY) {
                     case 0:
-                        x -= voxel.sideSize / 2;
-                        z -= voxel.sideSize / 2;
+                        if (this.x%2!=0) x -= voxel.sideSize / 2;
+                        if (this.y%2!=0) z -= voxel.sideSize / 2;
                         break;
                     case 1:
-                        x -= voxel.sideSize / 2;
-                        z += voxel.sideSize / 2;
+                        if (this.x%2!=0) x -= voxel.sideSize / 2;
+                        if (this.y%2!=0) z += voxel.sideSize / 2;
                         break;
                     case 2:
-                        x += voxel.sideSize / 2;
-                        z += voxel.sideSize / 2;
+                        if (this.x%2!=0) x += voxel.sideSize / 2;
+                        if (this.y%2!=0) z += voxel.sideSize / 2;
                         break;
                     case 3:
-                        x += voxel.sideSize / 2;
-                        z -= voxel.sideSize / 2;
+                        if (this.x%2!=0) x += voxel.sideSize / 2;
+                        if (this.y%2!=0) z -= voxel.sideSize / 2;
                         break;
                     }
 
-                    x += posData.x * voxel.sideSize;
-                    z += posData.y * voxel.sideSize;
+                    x += posData.x * voxel.sideSize + this.offset.x;
+                    z += posData.z * voxel.sideSize + this.offset.z;
+                    y += this.offset.y;
 
                     // Update voxel transform
                     transform.matrix
@@ -103,7 +99,8 @@
                     voxel.modified = false;
                     posData.modified = false;
                 }
-            })
+            });
+            this._modified = false;
         }
     }
 
@@ -221,7 +218,7 @@
 
         displayGizmo(pipeline,matrixState) {
             if (!this._gizmoPlist) {
-                this._gizmoPlist = buildGrid(this.gridSize,this.x,this.y,this.node.context);
+                this._gizmoPlist = buildGrid(this.gridSize,this.x,this.y,this.offset,this.node.context);
             }
             matrixState.modelMatrixStack.push();
             pipeline.draw(this._gizmoPlist);
@@ -250,7 +247,7 @@
         deserialize(context,sceneData,url) {
             this.gridSize = sceneData.gridSize>=0 ? sceneData.gridSize : this.gridSize;
             this.x = sceneData.x>=0 ? sceneData.x : this.x;
-            this.y = sceneData.y>=0 ? sceneDAta.y : this.y;
+            this.y = sceneData.y>=0 ? sceneData.y : this.y;
             this._voxelPositions = sceneData.voxelPositions || {};
             this._offset = new bg.Vector3(sceneData.offset);
         }
