@@ -6,7 +6,8 @@ const path = require('path');
 const fs = require('fs');
 
 let config = {
-    outDir: 'build/'
+    outDir: 'build/',
+    distDir: 'dist/'
 };
 
 function getFiles(dir,fileExt,filelist) {
@@ -44,6 +45,13 @@ gulp.task("library", function() {
         .pipe(gulp.dest(`${config.outDir}/js/`));
 });
 
+gulp.task("distribute", function() {
+    let files = getFiles("src/","js");
+    return gulp.src(files)
+        .pipe(concat("bg2e-voxel.js"))
+        .pipe(gulp.dest(`${config.distDir}/js/`));
+});
+
 gulp.task("samples", function() {
     let sampleString = "";
     fs.readdirSync('examples')
@@ -69,6 +77,8 @@ gulp.task("samples", function() {
 });
 
 gulp.task("build",gulp.parallel("library","samples"));
+
+gulp.task("dist",gulp.parallel("distribute"));
 
 gulp.task("webserver",function() {
     connect.server({

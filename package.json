@@ -1,11 +1,9 @@
 {
-  "name": "bg2e-voxel",
+  "name": "bg2e-js-voxel",
   "version": "1.0.0",
   "description": "voxel components for bg2 engine",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ferserc1/bg2e-js-voxel.git"
