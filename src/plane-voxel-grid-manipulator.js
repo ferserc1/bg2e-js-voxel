@@ -167,46 +167,51 @@
                     let groupRotation = groupMatrix.rotation;
                     groupRotation.invert();
                     
-                    let distance = this._lastPickPoint.distance(intersection.point);
-                    let direction = new bg.Vector3(this._lastPickPoint);
-                    direction.sub(intersection.point);
-                    direction.normalize();
-                    direction = groupRotation.multVector(direction).xyz;
+                    if (action == bg.manipulation.GizmoAction.TRANSLATE) {
+                        let distance = this._lastPickPoint.distance(intersection.point);
+                        let direction = new bg.Vector3(this._lastPickPoint);
+                        direction.sub(intersection.point);
+                        direction.normalize();
+                        direction = groupRotation.multVector(direction).xyz;
 
-                    if (distance>voxel.sideSize) {
-                        let pos = grid._voxelPositions[voxel.identifier] || { x:0, y: 0 };
-                        switch (cardinalPoint(new bg.Vector2(direction.x,direction.z))) {
-                        case CardinalPoint.N:
-                            console.log("N");
-                            pos.y--;
-                            break;
-                        case CardinalPoint.NE:
-                            console.log("NE");
-                            break;
-                        case CardinalPoint.E:
-                            console.log("E");
-                            pos.x++;
-                            break;
-                        case CardinalPoint.SE:
-                            console.log("SE");
-                            break;
-                        case CardinalPoint.S:
-                            console.log("S");
-                            pos.y++;
-                            break;
-                        case CardinalPoint.SW:
-                            console.log("SW");
-                            break;
-                        case CardinalPoint.W:
-                            console.log("W");
-                            pos.x--;
-                            break;
-                        case CardinalPoint.NW:
-                            console.log("NW");
-                            break;
+                        if (distance>voxel.sideSize) {
+                            let pos = grid._voxelPositions[voxel.identifier] || { x:0, y: 0 };
+                            switch (cardinalPoint(new bg.Vector2(direction.x,direction.z))) {
+                            case CardinalPoint.N:
+                                pos.y--;
+                                break;
+                            case CardinalPoint.NE:
+                                break;
+                            case CardinalPoint.E:
+                                pos.x++;
+                                break;
+                            case CardinalPoint.SE:
+                                break;
+                            case CardinalPoint.S:
+                                pos.y++;
+                                break;
+                            case CardinalPoint.SW:
+                                break;
+                            case CardinalPoint.W:
+                                pos.x--;
+                                break;
+                            case CardinalPoint.NW:
+                                break;
+                            }
+                            this._lastPickPoint = intersection.point;
+                            grid.setVoxelPosition(voxel,pos.x,pos.y);
                         }
-                        this._lastPickPoint = intersection.point;
-                        grid.setVoxelPosition(voxel,pos.x,pos.y);
+                    }
+                    else if (action == bg.manipulation.GizmoAction.ROTATE || action == bg.manipulation.GizmoAction.ROTATE_FINE) {
+                        let distance = this._lastPickPoint.distance(intersection.point);
+                        if (distance>0.2) {
+                            voxel.rotationY = voxel.rotationY==3 ? 0 : voxel.rotationY + 1;
+                            this._lastPickPoint = intersection.point;
+                        }
+                        else if (distance<-0.2) {
+                            voxel.rotationY = voxel.rotationY==0 ? 3 : voxel.rotationY - 1;
+                            this._lastPickPoint = intersection.point;
+                        }
                     }
                     
 					this.transform.matrix = matrix;
@@ -220,5 +225,5 @@
     }
     
     bg.manipulation.PlaneVoxelGizmo = PlaneVoxelGizmo;
-    
+
 })();
