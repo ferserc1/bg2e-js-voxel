@@ -56,7 +56,7 @@
             this.node.children.forEach((child) => {
                 let voxel = child.component("bg.scene.Voxel");
                 let voxelId = voxel && voxel.identifier;
-                let posData = voxelId && this._voxelPositions[voxelId] || { x:0, z: 0 };
+                let posData = voxelId && this._voxelPositions[voxelId] || { x:0, y: 0 };
                 let transform = child.transform;
                 if (voxel && transform && voxel.isCompatible(this) &&
                     (voxel.modified || posData.modified || this._modified))
@@ -87,7 +87,7 @@
                     }
 
                     x += posData.x * voxel.sideSize + this.offset.x;
-                    z += posData.z * voxel.sideSize + this.offset.z;
+                    z += posData.y * voxel.sideSize + this.offset.z;
                     y += this.offset.y;
 
                     // Update voxel transform
