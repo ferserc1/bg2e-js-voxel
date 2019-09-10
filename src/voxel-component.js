@@ -105,6 +105,12 @@
             this._offset = new bg.Vector3(0,0,0);
         }
 
+        // If a model is loaded directly from a file, instead of being loaded from a
+        // scene, it's important to regenerate the UUID before use it in the scene
+        refreshUUID() {
+            this._identifier = bg.utils.generateUUID();
+        }
+
         set modified(m) { this._modified = m; }
         get modified() { return this._modified; }
 
