@@ -517,16 +517,16 @@
                         if (this.y%2!=0) z -= voxel.sideSize / 2;
                         break;
                     case 1:
-                        if (this.x%2!=0) x -= voxel.sideSize / 2;
-                        if (this.y%2!=0) z += voxel.sideSize / 2;
+                        if (this.x%2==0) x -= voxel.sideSize / 2;
+                        if (this.y%2==0) z += voxel.sideSize / 2;
                         break;
                     case 2:
                         if (this.x%2!=0) x += voxel.sideSize / 2;
                         if (this.y%2!=0) z += voxel.sideSize / 2;
                         break;
                     case 3:
-                        if (this.x%2!=0) x += voxel.sideSize / 2;
-                        if (this.y%2!=0) z -= voxel.sideSize / 2;
+                        if (this.x%2==0) x += voxel.sideSize / 2;
+                        if (this.y%2==0) z -= voxel.sideSize / 2;
                         break;
                     }
 
