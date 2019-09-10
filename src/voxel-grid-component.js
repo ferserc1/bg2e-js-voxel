@@ -161,6 +161,27 @@
             this._voxelPositions[voxelId] = positionData;
         }
 
+        getVoxelPosition(inVoxel) {
+            let voxelId = "";
+            if (typeof(inVoxel)=="string") {
+                voxelId = inVoxel;
+            }
+            else if (inVoxel instanceof bg.scene.Voxel) {
+                voxelId = inVoxel.identifier;
+            }
+            else if (inVoxel instanceof bg.scene.Node &&
+                inVoxel.component("bg.scene.Voxel"))
+            {
+                voxelId = inVoxel.component("bg.scene.Voxel").identifier;
+            }
+            else {
+                throw new Error("Invalid voxel or voxel identifier");
+            }
+
+            let positionData = this._voxelPositions[voxelId] || { x:0, y:0 };
+            return new bg.Vector2(positionData.x, positionData.y);
+        }
+
         get gridSize() { return this._size; }
         set gridSize(s) {
             if (s<=0) {
