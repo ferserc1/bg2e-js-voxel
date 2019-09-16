@@ -1,6 +1,6 @@
 {
   "name": "bg2e-js-voxel",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "voxel components for bg2 engine",
   "main": "index.js",
   "scripts": {},

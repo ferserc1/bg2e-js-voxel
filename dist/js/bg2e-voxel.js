@@ -507,32 +507,40 @@
                 {
                     let offset = voxel.offset;
                     let rotY = voxel.angleY;
-                    let x = offset.x;
-                    let y = offset.y;
-                    let z = offset.z;
+                    let x = 0;
+                    let y = 0;
+                    let z = 0;
 
                     switch (voxel.rotationY) {
                     case 0:
                         if (this.x%2!=0) x -= voxel.sideSize / 2;
                         if (this.y%2!=0) z -= voxel.sideSize / 2;
+                        x += offset.x;
+                        z += offset.z;
                         break;
                     case 1:
-                        if (this.x%2==0) x -= voxel.sideSize / 2;
-                        if (this.y%2==0) z += voxel.sideSize / 2;
+                        if (this.x%2!=0) x -= voxel.sideSize / 2;
+                        if (this.y%2!=0) z -= voxel.sideSize / 2;
+                        x += offset.z;
+                        z += offset.x;
                         break;
                     case 2:
                         if (this.x%2!=0) x += voxel.sideSize / 2;
                         if (this.y%2!=0) z += voxel.sideSize / 2;
+                        x += offset.x;
+                        z += offset.z;
                         break;
                     case 3:
-                        if (this.x%2==0) x += voxel.sideSize / 2;
-                        if (this.y%2==0) z -= voxel.sideSize / 2;
+                        if (this.x%2!=0) x += voxel.sideSize / 2;
+                        if (this.y%2!=0) z += voxel.sideSize / 2;
+                        x += offset.z;
+                        z += offset.x;
                         break;
                     }
 
                     x += posData.x * voxel.sideSize + this.offset.x;
                     z += posData.y * voxel.sideSize + this.offset.z;
-                    y += this.offset.y;
+                    y += this.offset.y + offset.y;
 
                     // Update voxel transform
                     transform.matrix
